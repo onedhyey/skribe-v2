@@ -205,7 +205,7 @@ export default function NewAgentPage() {
   }
 
   return (
-    <div className="min-h-screen bg-muted px-8 py-8">
+    <div className="min-h-screen px-8 py-8">
       {/* Page Header */}
       <div className="mb-8">
         <h1 className="font-serif text-2xl font-bold text-foreground">
@@ -247,7 +247,7 @@ export default function NewAgentPage() {
                 role="button"
                 tabIndex={0}
                 aria-label={`Start ${point.title} agent${isCompleted ? " (completed)" : ""}${isRecommended ? " (recommended)" : ""}`}
-                className={`cursor-pointer transition-all hover:shadow-lg hover:border-primary/30 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
+                className={`cursor-pointer transition-all hover:border-primary/30 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
                   isCompleted ? "bg-success/5 border-success/30" : ""
                 } ${isRecommended ? "ring-2 ring-primary ring-offset-2" : ""}`}
                 onClick={() => handleStartAgent(point.id)}
@@ -307,7 +307,7 @@ export default function NewAgentPage() {
               role="button"
               tabIndex={0}
               aria-label={`Use ${template.name} template`}
-              className="cursor-pointer transition-all hover:shadow-lg hover:border-primary/30 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 relative group"
+              className="cursor-pointer transition-all hover:border-primary/30 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 relative group"
               onClick={() => handleUseTemplate(template)}
               onKeyDown={(e) => {
                 if (e.key === "Enter" || e.key === " ") {
@@ -394,7 +394,7 @@ export default function NewAgentPage() {
             role="button"
             tabIndex={0}
             aria-label="Start an open conversation"
-            className="cursor-pointer transition-all hover:shadow-lg hover:border-primary/30 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 border-dashed"
+            className="cursor-pointer transition-all hover:border-primary/30 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 border-dashed"
             onClick={handleOpenAgent}
             onKeyDown={(e) => {
               if (e.key === "Enter" || e.key === " ") {
@@ -428,7 +428,7 @@ export default function NewAgentPage() {
             role="button"
             tabIndex={0}
             aria-label="Create a new template"
-            className="cursor-pointer transition-all hover:shadow-lg hover:border-primary/30 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 border-dashed"
+            className="cursor-pointer transition-all hover:border-primary/30 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 border-dashed"
             onClick={() => setIsCreateTemplateModalOpen(true)}
             onKeyDown={(e) => {
               if (e.key === "Enter" || e.key === " ") {

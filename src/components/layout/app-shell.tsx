@@ -48,11 +48,11 @@ export function AppShell({ projectId, children }: AppShellProps) {
     : 0;
 
   return (
-    <div className="flex min-h-screen bg-muted">
+    <div className="flex min-h-screen bg-white">
       {/* Sidebar */}
       <aside
         className={cn(
-          "fixed left-4 top-4 bottom-4 z-30 flex flex-col bg-white rounded-2xl shadow-[0_2px_8px_-2px_rgb(0_0_0/0.08),0_4px_12px_-4px_rgb(0_0_0/0.05)] transition-[width,opacity] duration-300 ease-in-out",
+          "fixed left-0 top-0 bottom-0 z-30 flex flex-col bg-muted border-r border-border transition-[width,opacity] duration-300 ease-in-out",
           collapsed === null ? "opacity-0 pointer-events-none w-64" : collapsed ? "w-16" : "w-64"
         )}
       >
@@ -114,8 +114,8 @@ export function AppShell({ projectId, children }: AppShellProps) {
       {/* Main Content */}
       <div
         className={cn(
-          "flex-1 pt-4 pr-8 transition-[padding] duration-300 ease-in-out",
-          collapsed === true ? "pl-24" : "pl-72"
+          "flex-1 transition-[padding] duration-300 ease-in-out",
+          collapsed === true ? "pl-16" : "pl-64"
         )}
       >
         {/* Trial Banner */}

@@ -42,7 +42,7 @@ export function DocumentEditorPanel({
       {/* Panel */}
       <div
         className={cn(
-          "fixed top-0 right-0 h-full bg-white border-l border-border shadow-xl z-40",
+          "fixed top-0 right-0 h-full bg-white border-l border-border z-40",
           "transform transition-transform duration-300 ease-in-out",
           widthClasses[width],
           isOpen ? "translate-x-0" : "translate-x-full"

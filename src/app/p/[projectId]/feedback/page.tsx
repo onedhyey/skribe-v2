@@ -147,7 +147,7 @@ export default function FeedbackPage() {
   }
 
   return (
-    <div className="min-h-screen bg-muted px-8 py-8">
+    <div className="min-h-screen px-8 py-8">
       {/* Page Header */}
       <div className="mb-8">
         <h1 className="font-serif text-2xl font-bold text-foreground">

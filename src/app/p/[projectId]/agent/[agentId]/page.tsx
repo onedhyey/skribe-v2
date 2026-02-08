@@ -375,13 +375,13 @@ export default function AgentPage() {
 
   return (
     <div
-      className="flex h-screen flex-col bg-muted transition-all duration-300"
+      className="flex h-dvh flex-col bg-white transition-all duration-300 overflow-hidden"
       style={{
         marginRight: isPanelOpen ? "480px" : "0",
       }}
     >
       {/* Header */}
-      <header className="px-6 py-4">
+      <header className="flex-shrink-0 px-6 py-4">
         <div className="flex items-center gap-4">
           <div className="flex-1 min-w-0">
             <h1 className="font-serif text-xl font-semibold truncate">
@@ -448,7 +448,7 @@ export default function AgentPage() {
       </div>
 
       {/* Input */}
-      <div className="px-6 pb-4">
+      <div className="flex-shrink-0 px-6 pb-4">
         <div className="mx-auto max-w-3xl">
           {/* Selection context chip */}
           {selectionContext && (
@@ -469,7 +469,7 @@ export default function AgentPage() {
             onFilesDropped={addImages}
             disabled={isSubmitting || isUploading}
           >
-            <div className="bg-white rounded-2xl shadow-[0_2px_8px_-2px_rgb(0_0_0/0.08),0_4px_12px_-4px_rgb(0_0_0/0.05)] p-4">
+            <div className="bg-white rounded-2xl border border-border shadow-[0_2px_8px_-2px_rgb(0_0_0/0.08),0_4px_12px_-4px_rgb(0_0_0/0.05)] p-4">
               {/* Image preview grid */}
               {pendingImages.length > 0 && (
                 <ImagePreviewGrid
@@ -611,7 +611,7 @@ function MessageBubble({
         {/* Display attached images (for user messages) */}
         {isUser && message.imageIds && message.imageIds.length > 0 && (
           <div
-            className="rounded-2xl rounded-tr-none bg-secondary p-3 shadow-sm"
+            className="rounded-2xl bg-muted-light p-3"
           >
             <ChatImageDisplay imageIds={message.imageIds} />
           </div>
@@ -622,7 +622,7 @@ function MessageBubble({
           <div
             className={`${
               isUser
-                ? "rounded-2xl rounded-tr-none bg-secondary text-white p-4 shadow-sm"
+                ? "rounded-2xl bg-muted-light text-foreground p-4"
                 : ""
             }`}
           >
@@ -695,7 +695,7 @@ function MarkdownRenderer({
   const parts = content.split(/(```[\s\S]*?```)/g);
 
   return (
-    <div className={isUser ? "text-white" : ""}>
+    <div>
       {parts.map((part, index) => {
         if (part.startsWith("```")) {
           const match = part.match(/```(\w*)\n?([\s\S]*?)```/);

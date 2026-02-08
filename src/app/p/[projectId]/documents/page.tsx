@@ -207,7 +207,7 @@ export default function DocumentsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-muted px-8 py-8">
+    <div className="min-h-screen px-8 py-8">
       {/* Page Header */}
       <div className="mb-8 flex items-center justify-between">
         <div>
@@ -467,7 +467,7 @@ function DocumentCard({
   }, [isMenuOpen, onCloseMenu]);
 
   return (
-    <Card className="h-full transition-all hover:shadow-lg hover:border-primary/30 relative">
+    <Card className="h-full transition-all hover:border-primary/30 relative">
       <CardContent className="p-5">
         <div className="flex items-start justify-between gap-3 mb-3">
           <div className="flex items-center gap-2">

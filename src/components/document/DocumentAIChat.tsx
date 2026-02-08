@@ -301,7 +301,7 @@ export function DocumentAIChat({
                 className={cn(
                   "max-w-[85%]",
                   message.role === "user"
-                    ? "rounded-xl px-4 py-2.5 bg-primary text-white"
+                    ? "rounded-xl px-4 py-2.5 bg-muted-light text-foreground"
                     : "font-serif text-foreground"
                 )}
               >
@@ -312,7 +312,7 @@ export function DocumentAIChat({
                 ) : (
                   <>
                     {message.hasImages && (
-                      <div className="flex items-center gap-1 text-white/70 text-xs mb-1">
+                      <div className="flex items-center gap-1 text-muted-foreground text-xs mb-1">
                         <ImageAttachmentIcon className="h-3 w-3" />
                         <span>Image attached</span>
                       </div>

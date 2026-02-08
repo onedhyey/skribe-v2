@@ -3,21 +3,21 @@
 :root {
   /* Fonts */
   --font-figtree: 'Figtree', Helvetica, Arial, sans-serif;
-  --font-castoro: 'Castoro', Georgia, serif;
+  --font-besley: 'Besley', Georgia, serif;
 
-  /* Background colors */
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Background colors - warm white */
+  --background: #fffdfb;
+  --foreground: #1c1917;
 
-  /* Primary accent - Black for buttons */
-  --primary: #171717;
-  --primary-hover: #404040;
-  --primary-light: #f5f5f5;
+  /* Primary accent - Warm black for buttons */
+  --primary: #1c1917;
+  --primary-hover: #44403c;
+  --primary-light: #faf9f7;
 
-  /* Secondary accent - Soft gray */
-  --secondary: #525252;
-  --secondary-hover: #404040;
-  --secondary-light: #fafafa;
+  /* Secondary accent - Warm gray */
+  --secondary: #57534e;
+  --secondary-hover: #44403c;
+  --secondary-light: #fafaf9;
 
   /* Pastel palette - 6 colors for accents and agent icons */
   --pastel-rose: #FFD6E0;
@@ -27,22 +27,23 @@
   --pastel-peach: #FFE5D6;
   --pastel-lemon: #FFF5D6;
 
-  /* Neutral colors */
-  --muted: #fafafa;
-  --muted-foreground: #737373;
-  --border: #e5e5e5;
+  /* Neutral colors - warm grays */
+  --muted: #fafaf9;
+  --muted-light: #f5f5f4;
+  --muted-foreground: #78716c;
+  --border: #e7e5e4;
 
   /* Semantic colors */
   --destructive: #dc2626;
   --success: #16a34a;
   --warning: #ca8a04;
 
-  /* Shadows */
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-  --shadow-soft: 0 2px 8px -2px rgb(0 0 0 / 0.08), 0 4px 12px -4px rgb(0 0 0 / 0.05);
+  /* Shadows - warmer tint */
+  --shadow-sm: 0 1px 2px 0 rgb(28 25 23 / 0.05);
+  --shadow: 0 1px 3px 0 rgb(28 25 23 / 0.1), 0 1px 2px -1px rgb(28 25 23 / 0.1);
+  --shadow-md: 0 4px 6px -1px rgb(28 25 23 / 0.1), 0 2px 4px -2px rgb(28 25 23 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(28 25 23 / 0.1), 0 4px 6px -4px rgb(28 25 23 / 0.1);
+  --shadow-soft: 0 2px 8px -2px rgb(28 25 23 / 0.08), 0 4px 12px -4px rgb(28 25 23 / 0.05);
 }
 
 @theme inline {
@@ -55,6 +56,7 @@
   --color-secondary-hover: var(--secondary-hover);
   --color-secondary-light: var(--secondary-light);
   --color-muted: var(--muted);
+  --color-muted-light: var(--muted-light);
   --color-muted-foreground: var(--muted-foreground);
   --color-border: var(--border);
   --color-destructive: var(--destructive);
@@ -67,7 +69,7 @@
   --color-pastel-peach: var(--pastel-peach);
   --color-pastel-lemon: var(--pastel-lemon);
   --font-sans: var(--font-figtree);
-  --font-serif: var(--font-castoro);
+  --font-serif: var(--font-besley);
   --shadow-soft: var(--shadow-soft);
 }
 
@@ -78,26 +80,20 @@ body {
 }
 
 /* Typography */
-h1, h2 {
-  font-family: 'Castoro', Georgia, serif;
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Besley', Georgia, serif;
   font-weight: 400;
   letter-spacing: -0.02em;
 }
 
-h3, h4, h5, h6 {
-  font-family: 'Figtree', Helvetica, Arial, sans-serif;
-  font-weight: 500;
-}
-
 .font-serif {
-  font-family: 'Castoro', Georgia, serif;
+  font-family: 'Besley', Georgia, serif;
 }
 
 /* Logo specific styling - tight tracking */
 .logo-text {
-  font-family: 'Castoro', Georgia, serif;
-  font-style: italic;
-  font-weight: 400;
+  font-family: 'Besley', Georgia, serif;
+  font-weight: 500;
   letter-spacing: -0.03em;
 }
 

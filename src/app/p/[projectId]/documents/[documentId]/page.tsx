@@ -234,7 +234,7 @@ export default function DocumentPage() {
   }
 
   return (
-    <div className="min-h-screen bg-muted flex">
+    <div className="min-h-screen flex">
       {/* Main content area */}
       <div
         className="flex-1 min-w-0 transition-all duration-300"
@@ -408,24 +408,22 @@ export default function DocumentPage() {
 
       {/* Content */}
       <main className="mx-auto max-w-4xl px-6 py-6">
-        <div className="rounded-xl border border-border bg-white p-8 shadow-sm">
-          {isEditing ? (
-            <Textarea
-              value={editedContent}
-              onChange={(e) => setEditedContent(e.target.value)}
-              className="min-h-[500px] font-mono text-sm"
-              placeholder="Enter markdown content..."
+        {isEditing ? (
+          <Textarea
+            value={editedContent}
+            onChange={(e) => setEditedContent(e.target.value)}
+            className="min-h-[500px] font-mono text-sm"
+            placeholder="Enter markdown content..."
+          />
+        ) : (
+          <div className="prose prose-slate max-w-none">
+            <SelectableMarkdownRenderer
+              content={document.content}
+              onSelectionChange={setSelectedText}
+              selectionEnabled={!isEditing}
             />
-          ) : (
-            <div className="prose prose-slate max-w-none">
-              <SelectableMarkdownRenderer
-                content={document.content}
-                onSelectionChange={setSelectedText}
-                selectionEnabled={!isEditing}
-              />
-            </div>
-          )}
-        </div>
+          </div>
+        )}
       </main>
       </div>
 
