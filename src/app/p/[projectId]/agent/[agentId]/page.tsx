@@ -118,6 +118,19 @@ export default function AgentPage() {
   const [activeDocumentContent, setActiveDocumentContent] = useState("");
   const [selectionContext, setSelectionContext] = useState<SelectionContext | null>(null);
 
+  // Fetch agent to check if it has a linked document
+  const agent = useQuery(
+    api.agents.getById,
+    agentId ? { agentId: agentId as Id<"agents"> } : "skip"
+  );
+
+  // Redirect to document view if agent has a linked document
+  useEffect(() => {
+    if (agent && agent.documentId) {
+      router.replace(`/p/${projectId}/d/${agent.documentId}`);
+    }
+  }, [agent, router, projectId]);
+
   // Image upload state
   const {
     pendingImages,

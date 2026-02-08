@@ -3,7 +3,7 @@
 import { ProjectSelector } from "./project-selector";
 import { GitHubNavLink } from "./github-nav-link";
 import { SidebarNav } from "./sidebar-nav";
-import { RecentAgentsList } from "./recent-agents-list";
+import { RecentContextList } from "./recent-context-list";
 import { UserNav } from "./user-nav";
 import { useStoreUser } from "@/hooks/use-store-user";
 import Link from "next/link";
@@ -102,9 +102,9 @@ export function AppShell({ projectId, children }: AppShellProps) {
         {/* Navigation */}
         <SidebarNav projectId={projectId} collapsed={collapsed ?? false} />
 
-        {/* Recent Agents */}
+        {/* Recent Context */}
         <div className="flex-1 overflow-y-auto">
-          <RecentAgentsList projectId={projectId} collapsed={collapsed ?? false} />
+          <RecentContextList projectId={projectId} collapsed={collapsed ?? false} />
         </div>
 
         {/* User Nav */}
