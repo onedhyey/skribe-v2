@@ -141,13 +141,84 @@ export const getWithMessages = query({
   },
 });
 
-// Create a new agent
+// Get agent (chat) by document ID (with ownership check)
+export const getByDocument = query({
+  args: { documentId: v.id("documents") },
+  handler: async (ctx, args) => {
+    const user = await getAuthenticatedUser(ctx);
+    if (!user) {
+      return null;
+    }
+
+    // Verify document ownership via project
+    const document = await ctx.db.get(args.documentId);
+    if (!document) {
+      return null;
+    }
+
+    const project = await ctx.db.get(document.projectId);
+    if (!project || project.userId !== user._id) {
+      return null;
+    }
+
+    // Find agent linked to this document
+    const agent = await ctx.db
+      .query("agents")
+      .withIndex("by_document", (q) => q.eq("documentId", args.documentId))
+      .unique();
+
+    return agent;
+  },
+});
+
+// Get agent (chat) by document ID with messages (with ownership check)
+export const getByDocumentWithMessages = query({
+  args: { documentId: v.id("documents") },
+  handler: async (ctx, args) => {
+    const user = await getAuthenticatedUser(ctx);
+    if (!user) {
+      return null;
+    }
+
+    // Verify document ownership via project
+    const document = await ctx.db.get(args.documentId);
+    if (!document) {
+      return null;
+    }
+
+    const project = await ctx.db.get(document.projectId);
+    if (!project || project.userId !== user._id) {
+      return null;
+    }
+
+    // Find agent linked to this document
+    const agent = await ctx.db
+      .query("agents")
+      .withIndex("by_document", (q) => q.eq("documentId", args.documentId))
+      .unique();
+
+    if (!agent) {
+      return null;
+    }
+
+    const messages = await ctx.db
+      .query("messages")
+      .withIndex("by_agent", (q) => q.eq("agentId", agent._id))
+      .order("asc")
+      .collect();
+
+    return { ...agent, messages };
+  },
+});
+
+// Create a new agent (optionally linked to a document)
 export const create = mutation({
   args: {
     projectId: v.id("projects"),
     type: agentTypes,
     title: v.string(),
     systemPrompt: v.optional(v.string()),
+    documentId: v.optional(v.id("documents")),
   },
   handler: async (ctx, args) => {
     const user = await requireAuthenticatedUser(ctx);
@@ -155,10 +226,19 @@ export const create = mutation({
     // Verify project ownership
     await verifyProjectOwnership(ctx, args.projectId, user._id);
 
+    // If documentId provided, verify it belongs to this project
+    if (args.documentId) {
+      const document = await ctx.db.get(args.documentId);
+      if (!document || document.projectId !== args.projectId) {
+        throw new Error("Document not found or does not belong to this project");
+      }
+    }
+
     const now = Date.now();
 
     const agentId = await ctx.db.insert("agents", {
       projectId: args.projectId,
+      documentId: args.documentId,
       type: args.type,
       title: args.title,
       systemPrompt: args.systemPrompt,
@@ -170,12 +250,13 @@ export const create = mutation({
   },
 });
 
-// Update agent title or system prompt
+// Update agent title, system prompt, or document link
 export const update = mutation({
   args: {
     agentId: v.id("agents"),
     title: v.optional(v.string()),
     systemPrompt: v.optional(v.string()),
+    documentId: v.optional(v.id("documents")),
   },
   handler: async (ctx, args) => {
     const user = await requireAuthenticatedUser(ctx);
@@ -188,6 +269,14 @@ export const update = mutation({
 
     // Verify project ownership
     await verifyProjectOwnership(ctx, agent.projectId, user._id);
+
+    // If documentId provided, verify it belongs to this project
+    if (updates.documentId) {
+      const document = await ctx.db.get(updates.documentId);
+      if (!document || document.projectId !== agent.projectId) {
+        throw new Error("Document not found or does not belong to this project");
+      }
+    }
 
     // Filter out undefined values
     const filteredUpdates = Object.fromEntries(

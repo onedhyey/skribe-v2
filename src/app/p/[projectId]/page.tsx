@@ -9,6 +9,8 @@ import { CustomAgentModal, CreateTemplateModal, EditTemplateModal } from "@/comp
 import { useStoreUser } from "@/hooks/use-store-user";
 import { useState, useMemo, useRef, useEffect } from "react";
 import { STARTING_POINTS, AgentType } from "@/lib/starting-points";
+import { getDocumentTemplate, getDocTypeToAgentTypes } from "@/lib/document-templates";
+import { SYSTEM_PROMPTS } from "@/lib/system-prompts";
 
 // Pastel color palette for starting point icons
 // Each entry: [background (lighter), icon color (darker)]
@@ -21,12 +23,12 @@ const PASTEL_COLORS = [
   { bg: "bg-[#FFFBE8]", icon: "text-[#C4A85F]" },     // Lemon
 ] as const;
 
-export default function NewAgentPage() {
+export default function NewContextPage() {
   const params = useParams();
   const router = useRouter();
   const projectId = params.projectId as string;
   const { user: storedUser } = useStoreUser();
-  const [isCreatingAgent, setIsCreatingAgent] = useState<string | null>(null);
+  const [isCreating, setIsCreating] = useState<string | null>(null);
   const [isCustomAgentModalOpen, setIsCustomAgentModalOpen] = useState(false);
   const [isCreateTemplateModalOpen, setIsCreateTemplateModalOpen] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<Doc<"agentTemplates"> | null>(null);
@@ -40,17 +42,17 @@ export default function NewAgentPage() {
     projectId ? { projectId: projectId as Id<"projects"> } : "skip"
   );
 
-  // Fetch project agents to know which starting points are completed
-  const agents = useQuery(
-    api.agents.getByProject,
+  // Fetch project documents to know which starting points are completed
+  const documents = useQuery(
+    api.documents.getByProject,
     projectId ? { projectId: projectId as Id<"projects"> } : "skip"
   );
 
   // Fetch user's templates
   const templates = useQuery(api.agentTemplates.getByUser);
 
-  // Create agent mutation
-  const createAgent = useMutation(api.agents.create);
+  // Create document with chat mutation
+  const createDocumentWithChat = useMutation(api.documents.createWithChat);
 
   // Template mutations
   const createTemplate = useMutation(api.agentTemplates.create);
@@ -68,69 +70,81 @@ export default function NewAgentPage() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Calculate which starting points have been completed (have agents)
+  // Calculate which starting points have been completed (have documents of that type)
   const completedStartingPoints = useMemo(() => {
-    if (!agents) return new Set<string>();
+    if (!documents) return new Set<string>();
     const completedTypes = new Set<string>();
-    for (const agent of agents) {
-      if (agent.type !== "custom") {
-        completedTypes.add(agent.type);
+    // Use shared helper to map document types back to agent types
+    const docTypeToAgentTypes = getDocTypeToAgentTypes();
+    for (const doc of documents) {
+      const agentTypes = docTypeToAgentTypes[doc.type as keyof typeof docTypeToAgentTypes] || [];
+      for (const agentType of agentTypes) {
+        completedTypes.add(agentType);
       }
     }
     return completedTypes;
-  }, [agents]);
+  }, [documents]);
 
-  // Check if project is new (no agents yet)
-  const isNewProject = agents !== undefined && agents.length === 0;
+  // Check if project is new (no documents yet)
+  const isNewProject = documents !== undefined && documents.length === 0;
 
-  const handleStartAgent = async (type: AgentType) => {
-    if (isCreatingAgent) return;
+  const handleStartContext = async (type: AgentType) => {
+    if (isCreating) return;
     if (!storedUser?._id || !projectId) return;
 
-    setIsCreatingAgent(type);
+    setIsCreating(type);
     setAgentError(null);
     try {
-      const startingPoint = STARTING_POINTS.find((sp) => sp.id === type);
-      const agentId = await createAgent({
+      const template = getDocumentTemplate(type);
+      const systemPrompt = SYSTEM_PROMPTS[type] || SYSTEM_PROMPTS.custom;
+
+      const result = await createDocumentWithChat({
         projectId: projectId as Id<"projects">,
-        type,
-        title: startingPoint?.title ?? "Custom Agent",
+        title: template.title,
+        content: template.defaultContent,
+        documentType: template.documentType,
+        agentType: type,
+        systemPrompt,
       });
 
-      router.push(`/p/${projectId}/agent/${agentId}`);
+      router.push(`/p/${projectId}/d/${result.documentId}`);
     } catch (error) {
-      console.error("Failed to create agent:", error);
-      setAgentError(error instanceof Error ? error.message : "Failed to create agent. Please try again.");
+      console.error("Failed to create context:", error);
+      setAgentError(error instanceof Error ? error.message : "Failed to create context. Please try again.");
     } finally {
-      setIsCreatingAgent(null);
+      setIsCreating(null);
     }
   };
 
-  const handleOpenAgent = () => {
+  const handleOpenCustom = () => {
     setIsCustomAgentModalOpen(true);
   };
 
-  const handleCreateCustomAgent = async (title: string, systemPrompt: string) => {
-    if (isCreatingAgent) return;
+  const handleCreateCustomContext = async (title: string, systemPrompt: string) => {
+    if (isCreating) return;
     if (!storedUser?._id || !projectId) return;
 
-    setIsCreatingAgent("custom");
+    setIsCreating("custom");
     setAgentError(null);
     try {
-      const agentId = await createAgent({
+      const template = getDocumentTemplate("custom");
+
+      const result = await createDocumentWithChat({
         projectId: projectId as Id<"projects">,
-        type: "custom",
-        title: title || "Open Agent",
-        systemPrompt: systemPrompt || undefined,
+        title: title || "Custom Document",
+        content: template.defaultContent,
+        documentType: "custom",
+        agentType: "custom",
+        systemPrompt: systemPrompt || SYSTEM_PROMPTS.custom,
       });
 
       setIsCustomAgentModalOpen(false);
-      router.push(`/p/${projectId}/agent/${agentId}`);
+      router.push(`/p/${projectId}/d/${result.documentId}`);
     } catch (error) {
-      console.error("Failed to create custom agent:", error);
-      setAgentError(error instanceof Error ? error.message : "Failed to create agent. Please try again.");
+      console.error("Failed to create custom context:", error);
+      setAgentError(error instanceof Error ? error.message : "Failed to create context. Please try again.");
     } finally {
-      setIsCreatingAgent(null);
+      setIsCreating(null);
     }
   };
 
@@ -174,25 +188,29 @@ export default function NewAgentPage() {
   };
 
   const handleUseTemplate = async (template: Doc<"agentTemplates">) => {
-    if (isCreatingAgent) return;
+    if (isCreating) return;
     if (!storedUser?._id || !projectId) return;
 
-    setIsCreatingAgent(`template-${template._id}`);
+    setIsCreating(`template-${template._id}`);
     setAgentError(null);
     try {
-      const agentId = await createAgent({
+      const docTemplate = getDocumentTemplate("custom");
+
+      const result = await createDocumentWithChat({
         projectId: projectId as Id<"projects">,
-        type: "custom",
         title: template.name,
+        content: docTemplate.defaultContent,
+        documentType: "custom",
+        agentType: "custom",
         systemPrompt: template.systemPrompt,
       });
 
-      router.push(`/p/${projectId}/agent/${agentId}`);
+      router.push(`/p/${projectId}/d/${result.documentId}`);
     } catch (error) {
-      console.error("Failed to create agent from template:", error);
+      console.error("Failed to create context from template:", error);
       setAgentError(error instanceof Error ? error.message : "Failed to start conversation. Please try again.");
     } finally {
-      setIsCreatingAgent(null);
+      setIsCreating(null);
     }
   };
 
@@ -209,8 +227,11 @@ export default function NewAgentPage() {
       {/* Page Header */}
       <div className="mb-8">
         <h1 className="font-serif text-2xl font-bold text-foreground">
-          Create new agent
+          Create new context
         </h1>
+        <p className="mt-2 text-muted-foreground">
+          Choose a starting point to create context documents for your project
+        </p>
       </div>
 
       {/* Error Banner */}
@@ -229,11 +250,11 @@ export default function NewAgentPage() {
         </div>
       )}
 
-      {/* Agent Templates Section */}
+      {/* Context Templates Section */}
       <div className="mb-10">
-        <h2 className="text-lg font-medium text-foreground">Agent templates</h2>
+        <h2 className="text-lg font-medium text-foreground">Context templates</h2>
         <p className="mb-4 mt-1 text-sm text-muted-foreground">
-          Pre-configured agents with specialized prompts to guide you through common tasks
+          Pre-configured templates with AI guidance to help you create strategic documents
         </p>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {STARTING_POINTS.map((point, index) => {
@@ -246,17 +267,17 @@ export default function NewAgentPage() {
                 key={point.id}
                 role="button"
                 tabIndex={0}
-                aria-label={`Start ${point.title} agent${isCompleted ? " (completed)" : ""}${isRecommended ? " (recommended)" : ""}`}
+                aria-label={`Start ${point.title}${isCompleted ? " (completed)" : ""}${isRecommended ? " (recommended)" : ""}`}
                 className={`cursor-pointer transition-all hover:border-primary/30 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
                   isCompleted ? "bg-success/5 border-success/30" : ""
                 } ${isRecommended ? "ring-2 ring-primary ring-offset-2" : ""}`}
-                onClick={() => handleStartAgent(point.id)}
+                onClick={() => handleStartContext(point.id)}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" || e.key === " ") {
                     if (e.key === " ") {
                       e.preventDefault();
                     }
-                    handleStartAgent(point.id);
+                    handleStartContext(point.id);
                   }
                 }}
               >
@@ -291,7 +312,7 @@ export default function NewAgentPage() {
                         {point.description}
                       </p>
                     </div>
-                    {isCreatingAgent === point.id && (
+                    {isCreating === point.id && (
                       <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
                     )}
                   </div>
@@ -333,10 +354,10 @@ export default function NewAgentPage() {
                       </span>
                     </div>
                     <p className="mt-1 text-xs text-muted-foreground line-clamp-2">
-                      {template.description || "Custom agent template"}
+                      {template.description || "Custom document template"}
                     </p>
                   </div>
-                  {isCreatingAgent === `template-${template._id}` && (
+                  {isCreating === `template-${template._id}` && (
                     <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
                   )}
                 </div>
@@ -386,37 +407,37 @@ export default function NewAgentPage() {
       <div>
         <h2 className="text-lg font-medium text-foreground">Start from scratch</h2>
         <p className="mb-4 mt-1 text-sm text-muted-foreground">
-          Begin with a blank slate or create your own reusable template
+          Begin with a blank document or create your own reusable template
         </p>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {/* Open Agent Card */}
+          {/* Custom Document Card */}
           <Card
             role="button"
             tabIndex={0}
-            aria-label="Start an open conversation"
+            aria-label="Create a custom document"
             className="cursor-pointer transition-all hover:border-primary/30 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 border-dashed"
-            onClick={handleOpenAgent}
+            onClick={handleOpenCustom}
             onKeyDown={(e) => {
               if (e.key === "Enter" || e.key === " ") {
                 if (e.key === " ") {
                   e.preventDefault();
                 }
-                handleOpenAgent();
+                handleOpenCustom();
               }
             }}
           >
             <CardContent className="p-4">
               <div className="flex items-start gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted">
-                  <MessageCircleIcon className="h-5 w-5 text-muted-foreground" />
+                  <DocumentPlusIcon className="h-5 w-5 text-muted-foreground" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-medium text-foreground">Open Conversation</h3>
+                  <h3 className="font-medium text-foreground">Custom Document</h3>
                   <p className="mt-1 text-xs text-muted-foreground line-clamp-2">
-                    Start a freeform conversation without a specific template
+                    Start with a blank document and custom AI guidance
                   </p>
                 </div>
-                {isCreatingAgent === "custom" && (
+                {isCreating === "custom" && (
                   <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
                 )}
               </div>
@@ -456,12 +477,12 @@ export default function NewAgentPage() {
         </div>
       </div>
 
-      {/* Custom Agent Modal */}
+      {/* Custom Context Modal */}
       <CustomAgentModal
         isOpen={isCustomAgentModalOpen}
         onClose={() => setIsCustomAgentModalOpen(false)}
-        onSubmit={handleCreateCustomAgent}
-        isLoading={isCreatingAgent === "custom"}
+        onSubmit={handleCreateCustomContext}
+        isLoading={isCreating === "custom"}
       />
 
       {/* Create Template Modal */}
@@ -502,7 +523,7 @@ function CheckIcon({ className }: { className?: string }) {
   );
 }
 
-function MessageCircleIcon({ className }: { className?: string }) {
+function DocumentPlusIcon({ className }: { className?: string }) {
   return (
     <svg
       className={className}
@@ -514,7 +535,10 @@ function MessageCircleIcon({ className }: { className?: string }) {
       strokeLinecap="round"
       strokeLinejoin="round"
     >
-      <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" />
+      <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
+      <polyline points="14 2 14 8 20 8" />
+      <line x1="12" y1="11" x2="12" y2="17" />
+      <line x1="9" y1="14" x2="15" y2="14" />
     </svg>
   );
 }

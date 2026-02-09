@@ -548,7 +548,7 @@ function DocumentCard({
             </div>
           </div>
         </div>
-        <Link href={`/p/${projectId}/documents/${doc._id}`} className="block">
+        <Link href={`/p/${projectId}/d/${doc._id}`} className="block">
           <h3 className="font-medium text-foreground mb-1 line-clamp-2 hover:text-primary transition-colors">
             {doc.title}
           </h3>

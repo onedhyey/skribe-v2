@@ -15,8 +15,8 @@ export function SidebarNav({ projectId, collapsed = false }: SidebarNavProps) {
   const navItems = [
     {
       href: `/p/${projectId}`,
-      label: "New Agent",
-      icon: MessageIcon,
+      label: "New Context",
+      icon: ContextPlusIcon,
       // Active when exactly on project page (not on agent or documents)
       isActive: pathname === `/p/${projectId}`,
     },
@@ -24,7 +24,7 @@ export function SidebarNav({ projectId, collapsed = false }: SidebarNavProps) {
       href: `/p/${projectId}/documents`,
       label: "Documents",
       icon: DocumentIcon,
-      isActive: pathname === `/p/${projectId}/documents`,
+      isActive: pathname === `/p/${projectId}/documents` || pathname.startsWith(`/p/${projectId}/documents/`) || pathname.startsWith(`/p/${projectId}/d/`),
     },
     {
       href: `/p/${projectId}/feedback`,
@@ -67,7 +67,7 @@ export function SidebarNav({ projectId, collapsed = false }: SidebarNavProps) {
   );
 }
 
-function MessageIcon({ className }: { className?: string }) {
+function ContextPlusIcon({ className }: { className?: string }) {
   return (
     <svg
       className={className}
@@ -79,10 +79,10 @@ function MessageIcon({ className }: { className?: string }) {
       strokeLinecap="round"
       strokeLinejoin="round"
     >
-      <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" />
-      <path d="M8 12h.01" />
-      <path d="M12 12h.01" />
-      <path d="M16 12h.01" />
+      <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
+      <polyline points="14 2 14 8 20 8" />
+      <line x1="12" y1="11" x2="12" y2="17" />
+      <line x1="9" y1="14" x2="15" y2="14" />
     </svg>
   );
 }

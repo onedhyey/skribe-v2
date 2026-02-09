@@ -74,14 +74,19 @@ export default defineSchema({
     ),
     lastSyncedHash: v.optional(v.string()),
     lastSyncedAt: v.optional(v.number()),
+    // Link to the AI chat for this document (bidirectional with agents.documentId)
+    chatId: v.optional(v.id("agents")),
     createdAt: v.number(),
     updatedAt: v.number(),
   })
     .index("by_project", ["projectId"])
-    .index("by_type", ["projectId", "type"]),
+    .index("by_type", ["projectId", "type"])
+    .index("by_chat", ["chatId"]),
 
   agents: defineTable({
     projectId: v.id("projects"),
+    // Link to the document this chat is associated with (bidirectional with documents.chatId)
+    documentId: v.optional(v.id("documents")),
     type: v.union(
       v.literal("idea_refinement"),
       v.literal("market_validation"),
@@ -102,7 +107,8 @@ export default defineSchema({
     updatedAt: v.number(),
   })
     .index("by_project", ["projectId"])
-    .index("by_type", ["projectId", "type"]),
+    .index("by_type", ["projectId", "type"])
+    .index("by_document", ["documentId"]),
 
   messages: defineTable({
     agentId: v.id("agents"),
