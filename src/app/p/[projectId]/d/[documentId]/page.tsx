@@ -128,6 +128,9 @@ export default function UnifiedDocumentPage() {
   const [editedSystemPrompt, setEditedSystemPrompt] = useState("");
   const [isSavingPrompt, setIsSavingPrompt] = useState(false);
 
+  // Mutex to prevent concurrent chat creation
+  const creatingChatRef = useRef(false);
+
   // Image upload state
   const {
     pendingImages,
@@ -201,11 +204,17 @@ export default function UnifiedDocumentPage() {
   // Create chat if document doesn't have one
   useEffect(() => {
     async function ensureChat() {
+      // Prevent concurrent chat creation
+      if (creatingChatRef.current) return;
+
       if (document && chatData === null) {
+        creatingChatRef.current = true;
         try {
           await createChatForDocument({ documentId: documentId as Id<"documents"> });
         } catch (error) {
           console.error("Failed to create chat for document:", error);
+        } finally {
+          creatingChatRef.current = false;
         }
       }
     }
@@ -272,7 +281,7 @@ export default function UnifiedDocumentPage() {
       await deleteDocument({
         documentId: documentId as Id<"documents">,
       });
-      router.push(`/p/${projectId}/documents`);
+      router.push(`/p/${projectId}`);
     } catch (error) {
       console.error("Failed to delete document:", error);
       setActionError(
@@ -496,7 +505,8 @@ export default function UnifiedDocumentPage() {
     try {
       await updateAgent({
         agentId: chatData._id,
-        systemPrompt: editedSystemPrompt || undefined,
+        // Send empty string explicitly when cleared, otherwise keep the edited value
+        systemPrompt: editedSystemPrompt === "" ? "" : editedSystemPrompt || undefined,
       });
       setIsSystemPromptOpen(false);
     } catch (error) {
@@ -685,7 +695,7 @@ export default function UnifiedDocumentPage() {
       </div>
 
       {/* Right Panel - AI Chat */}
-      <div className="w-1/2 max-w-xl flex flex-col min-w-0 bg-neutral-50">
+      <div className="w-1/2 flex flex-col min-w-0 bg-neutral-50">
         {/* Chat Header */}
         <header className="flex-shrink-0 border-b border-border bg-white px-6 py-4">
           <div className="flex items-center justify-between">

@@ -24,7 +24,7 @@ export function SidebarNav({ projectId, collapsed = false }: SidebarNavProps) {
       href: `/p/${projectId}/documents`,
       label: "Documents",
       icon: DocumentIcon,
-      isActive: pathname === `/p/${projectId}/documents` || pathname.startsWith(`/p/${projectId}/documents/`),
+      isActive: pathname === `/p/${projectId}/documents` || pathname.startsWith(`/p/${projectId}/documents/`) || pathname.startsWith(`/p/${projectId}/d/`),
     },
     {
       href: `/p/${projectId}/feedback`,

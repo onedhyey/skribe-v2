@@ -569,3 +569,28 @@ export const AGENT_TYPE_TO_DOC_TYPE: Record<AgentType, DocumentType> = {
   feedback_analysis: "feature",
   custom: "custom",
 };
+
+/**
+ * Get the inverse mapping: document types to agent types.
+ * This is useful for determining which starting points have been completed.
+ */
+export function getDocTypeToAgentTypes(): Record<DocumentType, AgentType[]> {
+  const result: Record<DocumentType, AgentType[]> = {
+    prd: [],
+    persona: [],
+    market: [],
+    brand: [],
+    business: [],
+    feature: [],
+    tech: [],
+    gtm: [],
+    landing: [],
+    custom: [],
+  };
+
+  for (const [agentType, docType] of Object.entries(AGENT_TYPE_TO_DOC_TYPE)) {
+    result[docType].push(agentType as AgentType);
+  }
+
+  return result;
+}

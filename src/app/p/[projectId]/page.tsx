@@ -9,7 +9,7 @@ import { CustomAgentModal, CreateTemplateModal, EditTemplateModal } from "@/comp
 import { useStoreUser } from "@/hooks/use-store-user";
 import { useState, useMemo, useRef, useEffect } from "react";
 import { STARTING_POINTS, AgentType } from "@/lib/starting-points";
-import { getDocumentTemplate } from "@/lib/document-templates";
+import { getDocumentTemplate, getDocTypeToAgentTypes } from "@/lib/document-templates";
 import { SYSTEM_PROMPTS } from "@/lib/system-prompts";
 
 // Pastel color palette for starting point icons
@@ -74,20 +74,10 @@ export default function NewContextPage() {
   const completedStartingPoints = useMemo(() => {
     if (!documents) return new Set<string>();
     const completedTypes = new Set<string>();
-    // Map document types back to agent types
-    const docTypeToAgentType: Record<string, string[]> = {
-      prd: ["idea_refinement", "create_prd"],
-      market: ["market_validation"],
-      persona: ["customer_persona"],
-      brand: ["brand_strategy"],
-      business: ["business_model"],
-      feature: ["new_features", "feedback_analysis"],
-      tech: ["tech_stack"],
-      gtm: ["go_to_market"],
-      landing: ["landing_page"],
-    };
+    // Use shared helper to map document types back to agent types
+    const docTypeToAgentTypes = getDocTypeToAgentTypes();
     for (const doc of documents) {
-      const agentTypes = docTypeToAgentType[doc.type] || [];
+      const agentTypes = docTypeToAgentTypes[doc.type as keyof typeof docTypeToAgentTypes] || [];
       for (const agentType of agentTypes) {
         completedTypes.add(agentType);
       }
@@ -364,7 +354,7 @@ export default function NewContextPage() {
                       </span>
                     </div>
                     <p className="mt-1 text-xs text-muted-foreground line-clamp-2">
-                      {template.description || "Custom agent template"}
+                      {template.description || "Custom document template"}
                     </p>
                   </div>
                   {isCreating === `template-${template._id}` && (
